@@ -1,0 +1,74 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title></title>
+<script>
+function createCommandUrl(cmd) {
+var result = "/cam/decoder_control.cgi?loginuse=admin&loginpas=888888&command=" + cmd + "&onestep=0"
+        + '&' + new Date().getTime() + Math.random();
+return result;
+}
+
+function OnPtzMouseUp(cmd) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if ( this.status == 200) {
+      xhttp.open("GET", createCommandUrl(cmd+1), true);
+      xhttp.send();
+    }
+  };
+  xhttp.open("GET", createCommandUrl(cmd), true);
+  xhttp.send();
+}
+ledon1 = false;
+ledon2 = false;
+
+function createLedCmd(cmd) {
+	if(cmd == 0) {
+		ledon1 = !ledon1;
+		if(ledon1) {
+				return "/led/on1";
+		}
+		return  "/led/off1";
+	}
+	if(cmd == 1) {
+		ledon2 = !ledon2;
+		if(ledon2) {
+				return "/led/on2";
+		}
+		return  "/led/off2";
+	}
+}
+
+function onLed(cmd) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("GET", createLedCmd(cmd), true);
+  xhttp.send();
+
+}
+</script>
+</head>
+<body >
+<table align="center">
+<tr><td align="center" colspan="3">
+<div id="image">
+<img id="videoC" name="videoC" width="640" height="360" hspace="0" vspace="0" src="/videostream" style="width: 640px; height: 360px;">
+</div></td></tr>
+<tr>
+<td align="center"><input id="btnup" type="button" value="Up" onClick="OnPtzMouseUp(0)"/></td>
+</tr>
+<tr>
+<td align="center">
+<input id="btnleft" type="button" value="Left" onClick="onLed(0)"/>
+<!--<input id="btnstop" type="button" value="Stop" onClick="OnPtzMouseStop()"/>-->
+<input id="btnright" type="button" value="Right" onClick="onLed(1)"/>
+</td>
+</tr>
+<tr>
+<td align="center"><input id="btndown" type="button" value="Down" onClick="OnPtzMouseUp(2)"></td>
+</tr>
+</table>
+</center>
+</body>
+</html>
+
