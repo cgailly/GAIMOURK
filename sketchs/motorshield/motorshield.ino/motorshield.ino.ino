@@ -1,99 +1,3 @@
-// Simple Motor Shield sketch
-// -----------------------------------
-//
-// By arduino.cc user "Krodal".
-// June 2012
-// Open Source / Public Domain
-//
-// Using Arduino 1.0.1
-//
-// A simple sketch for the motor shield,
-// without using the Adafruit library.
-//
-// The outputs can be used for DC-motors 
-// (either full H-bridge or just On and Off), lights, 
-// relays, solenoids, etc.
-// But stepper motors can not be used !
-// Servo motors can be used with the default Servo library.
-//
-// A maximum of 4 DC motors can be used with full-bridge,
-// or a maximum of 8 normal outputs, or a combination.
-// Two servo motors can always be used, they use the +5V 
-// of the Arduino board, so the voltage regulator could 
-// get hot.
-//
-// Tested with an Ebay clone with the Arduino Uno.
-//
-// Parts of the code are from an old Adafruit Motor Shield
-// library, which was public domain at that time.
-// This code is also public domain
-//
-// This simplified program is using the normal 
-// Arduino library functions as much as possible.
-//
-// The motors will make a whistling sound, 
-// due to the analogWrite() PWM frequency.
-// The Adafruit library is specifically designed to avoid
-// this, so use the Adafruit library for a better result.
-//
-//
-//
-// Connector usage
-// ---------------
-// The order is different than what you would expect.
-// If the Arduino (Uno) board is held with the USB
-// connector to the left, the positive (A) side is 
-// at the top (north), and the negative (B) side is 
-// the bottom (south) for both headers.
-//
-//   Connector X1:
-//     M1 on outside = MOTOR1_A   (+) north
-//     M1 on inside  = MOTOR1_B   (-)
-//     middle        = GND
-//     M2 on inside  = MOTOR2_A   (+)
-//     M2 on outside = MOTOR2_B   (-) south
-//
-//   Connector X2:
-//     M3 on outside = MOTOR3_B   (-) south
-//     M3 on inside  = MOTOR3_A   (+)
-//     middle        = GND
-//     M4 on inside  = MOTOR4_B   (-)
-//     M4 on outside = MOTOR4_A   (+) north
-//
-//
-//         -------------------------------
-//         | -+s                         |
-//         | -+s                         |
-//    M1 A |                             | M4 A
-//    M1 B |                             | M4 B
-//    GND  |                             | GND
-//    M2 A |                             | M3 A
-//    M2 B |                             | M3 B
-//         |                       ..... |
-//         -------------------------------
-//                + - 
-//
-//
-//
-// Pin usage with the Motorshield
-// ---------------------------------------
-// Analog pins: not used at all
-//     A0 ... A5 are still available
-//     They all can also be used as digital pins.
-//     Also I2C (A4=SDA and A5=SCL) can be used.
-//     These pins have a breadboard area on the shield.
-// Digital pins: used: 3,4,5,6,7,8,9,10,11,12
-//     Pin 9 and 10 are only used for the servo motors.
-//     Already in use: 0 (RX) and 1 (TX).
-//     Unused: 2,13
-//     Pin 2 has an soldering hole on the board, 
-//           easy to connect a wire.
-//     Pin 13 is also connected to the system led.
-// I2C is possible, but SPI is not possible since 
-// those pins are used.
-//
-
-
 #include <Servo.h>
 
 #include <AFMotor.h>
@@ -137,6 +41,7 @@ AF_Stepper stepmotor(48, 1);
 // Declare classes for Servo connectors of the MotorShield.
 Servo servo_1;
 Servo servo_2;
+int count = 999;
 
 
 void setup()
@@ -149,6 +54,7 @@ void setup()
   // This might also set the servo in the middle position.
   servo_1.attach(SERVO1_PWM);
   servo_2.attach(SERVO2_PWM);
+  stepmotor.setSpeed(100);  
 }
 
 
@@ -161,67 +67,78 @@ void loop()
                 String  str = Serial.readString();
                 // say what you goi:                
                 if(str == "3") {
+                   count         = 0;                
                   Serial.println("3 OK");
                   motor(3, FORWARD, 256);
                 }
                 if(str == "4") {
                   Serial.println("4 OK");
+                  count         = 0;
                   motor(4, FORWARD, 256);
                 }
                if(str == "B") {
                   motor(3, FORWARD, 256);
                   motor(4, FORWARD, 256);
+                  count         = 0;
                   Serial.println("F OK");
                }
                if(str == "S") {
                   motor(3, BRAKE, 128);
                   motor(4, BRAKE, 128);
+                  count         = 0;
                   Serial.println("S OK");
                }
                if(str == "F") {
-                  motor(3, BACKWARD, 256);
-                  motor(4, BACKWARD, 256);
+                  motor(3, BACKWARD, 200);
+                  motor(4, BACKWARD, 200);
+                  count         = 0;
                   Serial.println("S OK");
                }
                
                if(str == "R") {
-                  motor(4, BACKWARD, 256);
-                  motor(3, FORWARD, 256);
+                  motor(4, BACKWARD, 200);
+                  motor(3, FORWARD, 200);
+                  count         = 0;
                   Serial.println("S OK");
                }
                if(str == "L") {
-                  motor(3, BACKWARD, 128);
-                  motor(4, FORWARD, 256);
+                  motor(3, BACKWARD, 200);
+                  motor(4, FORWARD, 200);
+                  count         = 0;
                   Serial.println("S OK");
                }
                if(str == "U") {
-                for(int i =0; i < 10 ;i++) {
-                  stepmotor.step(255, FORWARD, DOUBLE); 
-                  Serial.println("Cam UP OK");
+                count         = 0;
+                for(int i =0; i < 5 ;i++) {
+                   stepmotor.step(10, FORWARD, SINGLE); 
+                   Serial.println("Cam UP OK");
                 }
                }
                
                if(str == "D") {
-                  stepmotor.step(255, BACKWARD, DOUBLE); 
+                 count         = 0;
+                 for(int i =0; i < 5 ;i++) {
+                   stepmotor.step(10, BACKWARD, SINGLE); 
+                 }
                   Serial.println("Cam Down OK");
                }
 
+        } 
+        if(count == 999) {
+          delay(100);
+          return;
         }
-    delay(100);      
-//  // Suppose a DC motor is connected to M1_A(+) and M1_B(-)
-//  // Let it run full speed forward and half speed backward.
-//  // If 'BRAKE' or 'RELEASE' is used, the 'speed' parameter
-//  // is ignored.
-//  motor(1, FORWARD, 255);
-//  delay(2000);
-//  // Be friendly to the motor: stop it before reverse.
-//  motor(1, RELEASE, 0);
-//  delay(500);
-//  motor(1, BACKWARD, 128);
-//  delay(2000);
-//  motor(1, RELEASE, 0);
+         count++;
+         if(count > 20) {
+             count         = 999;
+             motor(3, BRAKE, 128);
+             motor(4, BRAKE, 128);             
+         }
+        
+       delay(100);
+   
+          
 }
-
 
 // Initializing
 // ------------
